@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+
+env:
+  IMAGE_NAME: ghcr.io/bellinatiperez/grwthy-whatsapp
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-dev:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set short SHA
+        id: sha
+        run: echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:dev-${{ steps.sha.outputs.short }}
+
+      - name: Update IAC
+        run: |
+          git clone https://x-access-token:${{ secrets.IAC_PAT }}@github.com/bellinatiperez/grwthy-iac.git /tmp/iac
+          cd /tmp/iac/overlays/dev
+          sed -i '/name: ghcr.io\/bellinatiperez\/grwthy-whatsapp/{n;s/newTag: .*/newTag: dev-${{ steps.sha.outputs.short }}/}' kustomization.yaml
+          cd /tmp/iac
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add overlays/dev/kustomization.yaml
+          git diff --staged --quiet || (git commit -m "chore(whatsapp): update dev image to dev-${{ steps.sha.outputs.short }}" && git push)
+
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tag.outputs.new_tag }}
+      new_version: ${{ steps.tag.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump version and push tag
+        id: tag
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+
+  build-production:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ needs.release.outputs.new_version }}
+            ${{ env.IMAGE_NAME }}:latest
+
+      - name: Update IAC
+        run: |
+          git clone https://x-access-token:${{ secrets.IAC_PAT }}@github.com/bellinatiperez/grwthy-iac.git /tmp/iac
+          cd /tmp/iac/overlays/production
+          sed -i '/name: ghcr.io\/bellinatiperez\/grwthy-whatsapp/{n;s/newTag: .*/newTag: "${{ needs.release.outputs.new_version }}"/}' kustomization.yaml
+          cd /tmp/iac
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add overlays/production/kustomization.yaml
+          git diff --staged --quiet || (git commit -m "chore(whatsapp): update production image to ${{ needs.release.outputs.new_version }}" && git push)
