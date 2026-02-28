@@ -1,0 +1,11 @@
+Qual a melhor abordagem para servir frontend e permitir integração externa?
+
+
+frontend -> api -> microservice
+
+ou
+
+frontend -> microservice
+
+
+considerar add integracao com microservices nao oficiais
