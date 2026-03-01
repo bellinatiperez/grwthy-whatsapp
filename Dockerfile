@@ -22,6 +22,6 @@ COPY --from=build /app/drizzle.config.ts ./
 COPY --from=build /app/src/database/migrations ./src/database/migrations
 COPY entrypoint.sh ./
 
-EXPOSE 3100
+EXPOSE 3002
 
 ENTRYPOINT ["sh", "entrypoint.sh"]
