@@ -18,8 +18,8 @@ COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev && npm install drizzle-orm drizzle-kit
 
 COPY --from=build /app/dist ./dist
-COPY drizzle.config.ts ./
-COPY src/database/schema ./src/database/schema
+COPY --from=build /app/drizzle.config.ts ./
+COPY --from=build /app/src/database/migrations ./src/database/migrations
 COPY entrypoint.sh ./
 
 EXPOSE 3100

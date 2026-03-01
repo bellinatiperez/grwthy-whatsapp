@@ -2,7 +2,7 @@
 set -e
 
 echo "Running database migrations..."
-npx drizzle-kit push --force
+npx drizzle-kit migrate
 echo "Migrations complete."
 
 exec node dist/main
