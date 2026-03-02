@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import * as express from 'express';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { InstanceService } from './instance.service';
 import { CreateInstanceDto } from './dto/create-instance.dto';
@@ -9,8 +10,9 @@ export class InstanceController {
   constructor(private readonly instanceService: InstanceService) {}
 
   @Post()
-  create(@Body() dto: CreateInstanceDto) {
-    return this.instanceService.create(dto);
+  create(@Body() dto: CreateInstanceDto, @Req() req: express.Request) {
+    const userId = req.headers['x-user-id'] as string | undefined;
+    return this.instanceService.create(dto, userId);
   }
 
   @Get()

@@ -14,6 +14,7 @@ export const instances = pgTable('instances', {
   businessAccountId: varchar('business_account_id', { length: 100 }).notNull(),
   accessToken: varchar('access_token', { length: 500 }).notNull(),
   apiKey: varchar('api_key', { length: 255 }),
+  userId: varchar('user_id', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

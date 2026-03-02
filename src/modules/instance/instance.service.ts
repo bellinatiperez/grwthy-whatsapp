@@ -15,7 +15,7 @@ export class InstanceService {
     private readonly cache: CacheService,
   ) {}
 
-  async create(dto: CreateInstanceDto) {
+  async create(dto: CreateInstanceDto, userId?: string) {
     const existing = await this.db
       .select()
       .from(schema.instances)
@@ -34,6 +34,7 @@ export class InstanceService {
         businessAccountId: dto.businessAccountId,
         accessToken: dto.accessToken,
         apiKey: dto.apiKey,
+        userId,
       })
       .returning();
 
