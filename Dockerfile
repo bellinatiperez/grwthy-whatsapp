@@ -15,13 +15,13 @@ FROM node:22-alpine AS production
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev && npm install drizzle-orm drizzle-kit @prisma/client
+RUN npm ci --omit=dev && npm install drizzle-kit
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle.config.ts ./
 COPY --from=build /app/src/database/migrations ./src/database/migrations
 COPY entrypoint.sh ./
 
-EXPOSE 3002
+EXPOSE 3000
 
 ENTRYPOINT ["sh", "entrypoint.sh"]
