@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Query, Body, HttpCode, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { timingSafeEqual } from 'crypto';
 import { MetaWebhookService } from './meta-webhook.service';
 
 @Controller('webhook/meta')
@@ -17,11 +18,21 @@ export class MetaWebhookController {
     @Query('hub.verify_token') token: string,
     @Query('hub.challenge') challenge: string,
   ): string {
-    const verifyToken = this.configService.get<string>('meta.webhookVerifyToken');
+    const verifyToken = this.configService.get<string>('meta.webhookVerifyToken') || '';
 
-    if (mode === 'subscribe' && token === verifyToken) {
-      this.logger.log('Webhook verified');
-      return challenge;
+    if (mode === 'subscribe' && token && verifyToken) {
+      try {
+        const isValid = timingSafeEqual(
+          Buffer.from(token),
+          Buffer.from(verifyToken),
+        );
+        if (isValid) {
+          this.logger.log('Webhook verified');
+          return challenge;
+        }
+      } catch {
+        // length mismatch
+      }
     }
 
     this.logger.warn('Webhook verification failed');

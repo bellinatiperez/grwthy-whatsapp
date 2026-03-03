@@ -17,7 +17,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const exResponse = exception.getResponse();
       message = typeof exResponse === 'string' ? exResponse : exResponse;
     } else if (exception instanceof Error) {
-      message = exception.message;
       this.logger.error(exception.message, exception.stack);
     }
 
