@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../../database/drizzle.provider';
 import * as schema from '../../database/schema/schema';
@@ -31,6 +32,8 @@ export class MessagePersistenceService {
       status: 'PENDING',
     }).returning();
 
+    await this.upsertChat({ remoteJid, instanceId: params.instanceId, isIncoming: false });
+
     return saved;
   }
 
@@ -57,7 +60,44 @@ export class MessagePersistenceService {
       status: 'RECEIVED',
     }).returning();
 
+    await this.upsertChat({
+      remoteJid,
+      name: params.pushName,
+      instanceId: params.instanceId,
+      isIncoming: true,
+    });
+
     return saved;
+  }
+
+  private async upsertChat(params: {
+    remoteJid: string;
+    name?: string;
+    instanceId: string;
+    isIncoming: boolean;
+  }) {
+    try {
+      await this.db
+        .insert(schema.chats)
+        .values({
+          remoteJid: params.remoteJid,
+          name: params.name,
+          instanceId: params.instanceId,
+          unreadMessages: params.isIncoming ? 1 : 0,
+        })
+        .onConflictDoUpdate({
+          target: [schema.chats.instanceId, schema.chats.remoteJid],
+          set: {
+            ...(params.name && { name: params.name }),
+            ...(params.isIncoming && {
+              unreadMessages: sql`${schema.chats.unreadMessages} + 1`,
+            }),
+            updatedAt: new Date(),
+          },
+        });
+    } catch (err) {
+      this.logger.error(`Failed to upsert chat for ${params.remoteJid}: ${err}`);
+    }
   }
 
   async saveStatusUpdate(params: {
