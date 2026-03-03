@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { StorageService } from '../../storage/storage.service';
 import { MediaDownloadService } from './media-download.service';
