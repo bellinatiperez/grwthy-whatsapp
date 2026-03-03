@@ -13,7 +13,10 @@ export class MediaDownloadService {
     private readonly instanceService: InstanceService,
   ) {}
 
-  async downloadAndStore(instanceName: string, mediaId: string): Promise<{ key: string; url: string }> {
+  async downloadAndStore(
+    instanceName: string,
+    mediaId: string,
+  ): Promise<{ key: string; buffer: Buffer; mimeType: string }> {
     const instance = await this.instanceService.findByName(instanceName);
 
     const mediaInfo = await this.metaApiClient.getMediaUrl(mediaId, instance.accessToken);
@@ -22,7 +25,6 @@ export class MediaDownloadService {
     const key = `${instance.id}/${mediaId}`;
     await this.storageService.uploadFile(key, buffer, mediaInfo.mime_type);
 
-    const url = await this.storageService.getPresignedUrl(key);
-    return { key, url };
+    return { key, buffer, mimeType: mediaInfo.mime_type };
   }
 }

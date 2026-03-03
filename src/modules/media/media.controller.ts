@@ -23,13 +23,16 @@ export class MediaController {
     const instance = await this.instanceService.findByName(instanceName);
     const key = `${instance.id}/${mediaId}`;
 
+    let buffer: Buffer;
     try {
-      const buffer = await this.storageService.downloadFile(key);
-      res.set('Cache-Control', 'private, max-age=86400');
-      res.send(buffer);
+      buffer = await this.storageService.downloadFile(key);
     } catch {
-      const { url } = await this.mediaDownloadService.downloadAndStore(instanceName, mediaId);
-      res.redirect(url);
+      const result = await this.mediaDownloadService.downloadAndStore(instanceName, mediaId);
+      buffer = result.buffer;
+      res.set('Content-Type', result.mimeType);
     }
+
+    res.set('Cache-Control', 'private, max-age=86400');
+    res.send(buffer);
   }
 }
