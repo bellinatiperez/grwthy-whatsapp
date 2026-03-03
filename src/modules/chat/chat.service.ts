@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, desc } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../../database/drizzle.provider';
 import * as schema from '../../database/schema/schema';
@@ -28,5 +28,18 @@ export class ChatService {
       .select()
       .from(schema.chats)
       .where(eq(schema.chats.instanceId, instance.id));
+  }
+
+  async markAsRead(instanceName: string, remoteJid: string) {
+    const instance = await this.instanceService.findByName(instanceName);
+    await this.db
+      .update(schema.chats)
+      .set({ unreadMessages: 0 })
+      .where(
+        and(
+          eq(schema.chats.instanceId, instance.id),
+          eq(schema.chats.remoteJid, remoteJid),
+        ),
+      );
   }
 }

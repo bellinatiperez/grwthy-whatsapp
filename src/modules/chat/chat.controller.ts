@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { ChatService } from './chat.service';
 
@@ -15,5 +15,13 @@ export class ChatController {
   @Get('conversations/:instanceName')
   findConversations(@Param('instanceName') instanceName: string) {
     return this.chatService.findConversations(instanceName);
+  }
+
+  @Put('read/:instanceName/:remoteJid')
+  markAsRead(
+    @Param('instanceName') instanceName: string,
+    @Param('remoteJid') remoteJid: string,
+  ) {
+    return this.chatService.markAsRead(instanceName, remoteJid);
   }
 }
