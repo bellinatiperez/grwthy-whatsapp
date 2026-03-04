@@ -4,9 +4,10 @@ import { MessageSendService } from './message-send.service';
 import { MessagePersistenceService } from './message-persistence.service';
 import { InstanceModule } from '../instance/instance.module';
 import { WebhookDispatchModule } from '../webhook-dispatch/webhook-dispatch.module';
+import { BusinessAccountModule } from '../business-account/business-account.module';
 
 @Module({
-  imports: [InstanceModule, WebhookDispatchModule],
+  imports: [InstanceModule, WebhookDispatchModule, BusinessAccountModule],
   controllers: [MessageSendController],
   providers: [MessageSendService, MessagePersistenceService],
   exports: [MessageSendService, MessagePersistenceService],
