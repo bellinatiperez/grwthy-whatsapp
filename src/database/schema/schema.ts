@@ -1,3 +1,5 @@
+export * from './business-accounts.table';
+export * from './business-account-members.table';
 export * from './instances.table';
 export * from './messages.table';
 export * from './message-status-updates.table';

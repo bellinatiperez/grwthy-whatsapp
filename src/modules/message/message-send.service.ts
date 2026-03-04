@@ -1,12 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MetaApiClient } from '../../shared/meta-api/meta-api.client';
-import { InstanceService } from '../instance/instance.service';
 import { MessagePersistenceService } from './message-persistence.service';
 import { WebhookDispatchService } from '../webhook-dispatch/webhook-dispatch.service';
 import { MetaEvent } from '../../common/constants/meta-events.constant';
 import { mapMetaTypeToInternal } from '../../common/utils/message-type-mapper.util';
 import { MetaSendMessagePayload } from '../../shared/meta-api/meta-api.types';
-import { StorageService } from '../../storage/storage.service';
+import * as schema from '../../database/schema/schema';
 import { isURL } from 'class-validator';
 import FormData from 'form-data';
 import * as mimeTypes from 'mime-types';
@@ -35,23 +34,19 @@ export class MessageSendService {
 
   constructor(
     private readonly metaApiClient: MetaApiClient,
-    private readonly instanceService: InstanceService,
     private readonly persistence: MessagePersistenceService,
     private readonly webhookDispatch: WebhookDispatchService,
-    private readonly storageService: StorageService,
   ) {}
 
   private async sendAndPersist(
-    instanceName: string,
+    instance: schema.Instance,
     payload: MetaSendMessagePayload,
     originalMessage: Record<string, any>,
     webhookUrl?: string,
   ) {
-    const instance = await this.instanceService.findByName(instanceName);
-
     const result = await this.metaApiClient.sendMessage(
       instance.phoneNumberId,
-      instance.accessToken,
+      instance.accessToken!,
       payload,
     );
 
@@ -68,16 +63,15 @@ export class MessageSendService {
     return saved;
   }
 
-  async sendText(instanceName: string, dto: SendTextDto) {
+  async sendText(instance: schema.Instance, dto: SendTextDto) {
     const payload = buildTextMessage(dto.number, dto.text, {
       linkPreview: dto.linkPreview,
       quotedMessageId: dto.quoted?.id,
     });
-    return this.sendAndPersist(instanceName, payload, { conversation: dto.text }, dto.webhookUrl);
+    return this.sendAndPersist(instance, payload, { conversation: dto.text }, dto.webhookUrl);
   }
 
-  async sendMedia(instanceName: string, dto: SendMediaDto) {
-    const instance = await this.instanceService.findByName(instanceName);
+  async sendMedia(instance: schema.Instance, dto: SendMediaDto) {
     const { mediaId, mediaIdType } = await this.resolveMedia(instance, dto.media, dto.mimetype, dto.fileName);
 
     const payload = buildMediaMessage(dto.number, dto.mediatype, mediaId, mediaIdType, {
@@ -86,7 +80,7 @@ export class MessageSendService {
       quotedMessageId: dto.quoted?.id,
     });
 
-    const result = await this.metaApiClient.sendMessage(instance.phoneNumberId, instance.accessToken, payload);
+    const result = await this.metaApiClient.sendMessage(instance.phoneNumberId, instance.accessToken!, payload);
 
     const saved = await this.persistence.saveOutgoingMessage({
       metaMessageId: result.messages[0].id,
@@ -101,15 +95,14 @@ export class MessageSendService {
     return saved;
   }
 
-  async sendAudio(instanceName: string, dto: SendAudioDto) {
-    const instance = await this.instanceService.findByName(instanceName);
+  async sendAudio(instance: schema.Instance, dto: SendAudioDto) {
     const { mediaId, mediaIdType } = await this.resolveMedia(instance, dto.audio);
 
     const payload = buildMediaMessage(dto.number, 'audio', mediaId, mediaIdType, {
       quotedMessageId: dto.quoted?.id,
     });
 
-    const result = await this.metaApiClient.sendMessage(instance.phoneNumberId, instance.accessToken, payload);
+    const result = await this.metaApiClient.sendMessage(instance.phoneNumberId, instance.accessToken!, payload);
 
     const saved = await this.persistence.saveOutgoingMessage({
       metaMessageId: result.messages[0].id,
@@ -124,17 +117,17 @@ export class MessageSendService {
     return saved;
   }
 
-  async sendButtons(instanceName: string, dto: SendButtonsDto) {
+  async sendButtons(instance: schema.Instance, dto: SendButtonsDto) {
     const payload = buildButtonMessage(
       dto.number,
       dto.title,
       dto.buttons.map((b) => ({ type: 'reply', reply: { id: b.reply.id, title: b.reply.title } })),
       { quotedMessageId: dto.quoted?.id },
     );
-    return this.sendAndPersist(instanceName, payload, { buttons: dto.buttons, text: dto.title }, dto.webhookUrl);
+    return this.sendAndPersist(instance, payload, { buttons: dto.buttons, text: dto.title }, dto.webhookUrl);
   }
 
-  async sendList(instanceName: string, dto: SendListDto) {
+  async sendList(instance: schema.Instance, dto: SendListDto) {
     const payload = buildListMessage(
       dto.number,
       dto.title,
@@ -143,41 +136,41 @@ export class MessageSendService {
       dto.sections,
       { footerText: dto.footerText, quotedMessageId: dto.quoted?.id },
     );
-    return this.sendAndPersist(instanceName, payload, { listMessage: dto }, dto.webhookUrl);
+    return this.sendAndPersist(instance, payload, { listMessage: dto }, dto.webhookUrl);
   }
 
-  async sendTemplate(instanceName: string, dto: SendTemplateDto) {
+  async sendTemplate(instance: schema.Instance, dto: SendTemplateDto) {
     const payload = buildTemplateMessage(dto.number, dto.name, dto.language, dto.components, {
       quotedMessageId: dto.quoted?.id,
     });
-    return this.sendAndPersist(instanceName, payload, { template: dto }, dto.webhookUrl);
+    return this.sendAndPersist(instance, payload, { template: dto }, dto.webhookUrl);
   }
 
-  async sendLocation(instanceName: string, dto: SendLocationDto) {
+  async sendLocation(instance: schema.Instance, dto: SendLocationDto) {
     const payload = buildLocationMessage(dto.number, dto.latitude, dto.longitude, {
       name: dto.name,
       address: dto.address,
       quotedMessageId: dto.quoted?.id,
     });
-    return this.sendAndPersist(instanceName, payload, {
+    return this.sendAndPersist(instance, payload, {
       locationMessage: { degreesLatitude: dto.latitude, degreesLongitude: dto.longitude },
     }, dto.webhookUrl);
   }
 
-  async sendContact(instanceName: string, dto: SendContactDto) {
+  async sendContact(instance: schema.Instance, dto: SendContactDto) {
     const payload = buildContactMessage(dto.number, dto.contact, { quotedMessageId: dto.quoted?.id });
-    return this.sendAndPersist(instanceName, payload, { contacts: dto.contact }, dto.webhookUrl);
+    return this.sendAndPersist(instance, payload, { contacts: dto.contact }, dto.webhookUrl);
   }
 
-  async sendReaction(instanceName: string, dto: SendReactionDto) {
+  async sendReaction(instance: schema.Instance, dto: SendReactionDto) {
     const payload = buildReactionMessage(dto.number, dto.messageId, dto.reaction);
-    return this.sendAndPersist(instanceName, payload, {
+    return this.sendAndPersist(instance, payload, {
       reactionMessage: { key: { id: dto.messageId }, text: dto.reaction },
     });
   }
 
   private async resolveMedia(
-    instance: { phoneNumberId: string; accessToken: string },
+    instance: { phoneNumberId: string; accessToken: string | null },
     media: string,
     mimetype?: string,
     fileName?: string,
@@ -197,7 +190,7 @@ export class MessageSendService {
     formData.append('messaging_product', 'whatsapp');
     formData.append('type', resolvedMimetype);
 
-    const result = await this.metaApiClient.uploadMedia(instance.phoneNumberId, instance.accessToken, formData);
+    const result = await this.metaApiClient.uploadMedia(instance.phoneNumberId, instance.accessToken!, formData);
     return { mediaId: result.id, mediaIdType: 'id' };
   }
 }

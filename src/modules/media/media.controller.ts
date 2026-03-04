@@ -1,33 +1,34 @@
-import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import type { Response } from 'express';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
+import { BusinessAccountContextInterceptor } from '../../common/interceptors/business-account-context.interceptor';
+import { ResolvedInstance } from '../../common/decorators/resolved-instance.decorator';
 import { StorageService } from '../../storage/storage.service';
 import { MediaDownloadService } from './media-download.service';
-import { InstanceService } from '../instance/instance.service';
+import { Instance } from '../../database/schema/schema';
 
 @UseGuards(ApiKeyGuard)
+@UseInterceptors(BusinessAccountContextInterceptor)
 @Controller('media')
 export class MediaController {
   constructor(
     private readonly mediaDownloadService: MediaDownloadService,
     private readonly storageService: StorageService,
-    private readonly instanceService: InstanceService,
   ) {}
 
   @Get(':instanceName/:mediaId')
   async getMedia(
-    @Param('instanceName') instanceName: string,
+    @ResolvedInstance() instance: Instance,
     @Param('mediaId') mediaId: string,
     @Res() res: Response,
   ) {
-    const instance = await this.instanceService.findByName(instanceName);
     const key = `${instance.id}/${mediaId}`;
 
     let buffer: Buffer;
     try {
       buffer = await this.storageService.downloadFile(key);
     } catch {
-      const result = await this.mediaDownloadService.downloadAndStore(instanceName, mediaId);
+      const result = await this.mediaDownloadService.downloadAndStore(instance, mediaId);
       buffer = result.buffer;
       res.set('Content-Type', result.mimeType);
     }

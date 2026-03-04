@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { CacheModule } from './cache/cache.module';
 import { StorageModule } from './storage/storage.module';
 import { MetaApiModule } from './shared/meta-api/meta-api.module';
+import { BusinessAccountModule } from './modules/business-account/business-account.module';
 import { InstanceModule } from './modules/instance/instance.module';
 import { MessageModule } from './modules/message/message.module';
 import { MetaWebhookModule } from './modules/webhook/meta-webhook.module';
@@ -29,6 +30,7 @@ import { HealthModule } from './modules/health/health.module';
     CacheModule,
     StorageModule,
     MetaApiModule,
+    BusinessAccountModule,
     InstanceModule,
     MessageModule,
     MetaWebhookModule,

@@ -95,6 +95,13 @@ export class InstanceService {
     return this.db.select().from(schema.instances);
   }
 
+  async findByBusinessAccountRefId(businessAccountRefId: string) {
+    return this.db
+      .select()
+      .from(schema.instances)
+      .where(eq(schema.instances.businessAccountRefId, businessAccountRefId));
+  }
+
   async remove(name: string) {
     const instance = await this.findByName(name);
     await this.db.delete(schema.instances).where(eq(schema.instances.id, instance.id));

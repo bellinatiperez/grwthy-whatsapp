@@ -1,27 +1,31 @@
-import { Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Put, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
+import { BusinessAccountContextInterceptor } from '../../common/interceptors/business-account-context.interceptor';
+import { ResolvedInstance } from '../../common/decorators/resolved-instance.decorator';
 import { ChatService } from './chat.service';
+import { Instance } from '../../database/schema/schema';
 
 @UseGuards(ApiKeyGuard)
+@UseInterceptors(BusinessAccountContextInterceptor)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get('messages/:instanceName')
-  findMessages(@Param('instanceName') instanceName: string) {
-    return this.chatService.findMessages(instanceName);
+  findMessages(@ResolvedInstance() instance: Instance) {
+    return this.chatService.findMessages(instance);
   }
 
   @Get('conversations/:instanceName')
-  findConversations(@Param('instanceName') instanceName: string) {
-    return this.chatService.findConversations(instanceName);
+  findConversations(@ResolvedInstance() instance: Instance) {
+    return this.chatService.findConversations(instance);
   }
 
   @Put('read/:instanceName/:remoteJid')
   markAsRead(
-    @Param('instanceName') instanceName: string,
+    @ResolvedInstance() instance: Instance,
     @Param('remoteJid') remoteJid: string,
   ) {
-    return this.chatService.markAsRead(instanceName, remoteJid);
+    return this.chatService.markAsRead(instance, remoteJid);
   }
 }

@@ -1,30 +1,34 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
+import { BusinessAccountContextInterceptor } from '../../common/interceptors/business-account-context.interceptor';
+import { ResolvedInstance } from '../../common/decorators/resolved-instance.decorator';
 import { TemplateService } from './template.service';
+import { Instance } from '../../database/schema/schema';
 import { CreateTemplateDto, EditTemplateDto, DeleteTemplateDto } from './dto/create-template.dto';
 
 @UseGuards(ApiKeyGuard)
+@UseInterceptors(BusinessAccountContextInterceptor)
 @Controller('template')
 export class TemplateController {
   constructor(private readonly templateService: TemplateService) {}
 
   @Get(':instanceName')
-  findAll(@Param('instanceName') instanceName: string) {
-    return this.templateService.findAll(instanceName);
+  findAll(@ResolvedInstance() instance: Instance) {
+    return this.templateService.findAll(instance);
   }
 
   @Post(':instanceName')
-  create(@Param('instanceName') instanceName: string, @Body() dto: CreateTemplateDto) {
-    return this.templateService.create(instanceName, dto);
+  create(@ResolvedInstance() instance: Instance, @Body() dto: CreateTemplateDto) {
+    return this.templateService.create(instance, dto);
   }
 
   @Put(':instanceName')
-  edit(@Param('instanceName') instanceName: string, @Body() dto: EditTemplateDto) {
-    return this.templateService.edit(instanceName, dto);
+  edit(@ResolvedInstance() instance: Instance, @Body() dto: EditTemplateDto) {
+    return this.templateService.edit(instance, dto);
   }
 
   @Delete(':instanceName')
-  remove(@Param('instanceName') instanceName: string, @Body() dto: DeleteTemplateDto) {
-    return this.templateService.remove(instanceName, dto);
+  remove(@ResolvedInstance() instance: Instance, @Body() dto: DeleteTemplateDto) {
+    return this.templateService.remove(instance, dto);
   }
 }
