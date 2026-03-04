@@ -3,7 +3,7 @@ import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { BusinessAccountContextInterceptor } from '../../common/interceptors/business-account-context.interceptor';
 import { ResolvedInstance } from '../../common/decorators/resolved-instance.decorator';
 import { ContactService } from './contact.service';
-import { Instance } from '../../database/schema/schema';
+import type { Instance } from '../../database/schema/schema';
 
 @UseGuards(ApiKeyGuard)
 @UseInterceptors(BusinessAccountContextInterceptor)

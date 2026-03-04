@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WebhookDispatchService } from '../../webhook-dispatch/webhook-dispatch.service';
 import { MetaEvent } from '../../../common/constants/meta-events.constant';
-import { Instance } from '../../../database/schema/schema';
+import type { Instance } from '../../../database/schema/schema';
 
 @Injectable()
 export class TemplateStatusProcessor {

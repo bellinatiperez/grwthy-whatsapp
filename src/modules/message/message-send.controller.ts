@@ -3,7 +3,7 @@ import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { BusinessAccountContextInterceptor } from '../../common/interceptors/business-account-context.interceptor';
 import { ResolvedInstance } from '../../common/decorators/resolved-instance.decorator';
 import { MessageSendService } from './message-send.service';
-import { Instance } from '../../database/schema/schema';
+import type { Instance } from '../../database/schema/schema';
 import { SendTextDto } from './dto/send-text.dto';
 import { SendMediaDto } from './dto/send-media.dto';
 import { SendAudioDto } from './dto/send-audio.dto';

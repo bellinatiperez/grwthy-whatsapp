@@ -4,7 +4,7 @@ import { BusinessAccountContextInterceptor } from '../../common/interceptors/bus
 import { ResolvedInstance } from '../../common/decorators/resolved-instance.decorator';
 import { BusinessProfileService } from './business-profile.service';
 import { UpdateBusinessProfileDto } from './dto/update-business-profile.dto';
-import { Instance } from '../../database/schema/schema';
+import type { Instance } from '../../database/schema/schema';
 
 @UseGuards(ApiKeyGuard)
 @UseInterceptors(BusinessAccountContextInterceptor)

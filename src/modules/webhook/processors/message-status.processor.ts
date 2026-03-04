@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { WebhookDispatchService } from '../../webhook-dispatch/webhook-dispatch.service';
 import { MetaEvent } from '../../../common/constants/meta-events.constant';
-import { Instance } from '../../../database/schema/schema';
+import type { Instance } from '../../../database/schema/schema';
 import { DRIZZLE } from '../../../database/drizzle.provider';
 import * as schema from '../../../database/schema/schema';
 

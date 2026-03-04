@@ -3,7 +3,7 @@ import { MessagePersistenceService } from '../../message/message-persistence.ser
 import { WebhookDispatchService } from '../../webhook-dispatch/webhook-dispatch.service';
 import { MetaEvent } from '../../../common/constants/meta-events.constant';
 import { mapMetaTypeToInternal } from '../../../common/utils/message-type-mapper.util';
-import { Instance } from '../../../database/schema/schema';
+import type { Instance } from '../../../database/schema/schema';
 import { parseTextMessage } from '../parsers/text-message.parser';
 import { parseMediaMessage } from '../parsers/media-message.parser';
 import { parseLocationMessage } from '../parsers/location-message.parser';
