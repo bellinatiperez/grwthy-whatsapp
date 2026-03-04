@@ -34,13 +34,13 @@ export class CreateInstanceDto {
   @IsNotEmpty()
   phoneNumberId: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  businessAccountId: string;
+  businessAccountId?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  accessToken: string;
+  accessToken?: string;
 
   @IsOptional()
   @IsString()

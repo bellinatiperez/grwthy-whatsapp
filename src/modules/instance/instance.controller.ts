@@ -12,7 +12,8 @@ export class InstanceController {
   @Post()
   create(@Body() dto: CreateInstanceDto, @Req() req: express.Request) {
     const userId = req.headers['x-user-id'] as string | undefined;
-    return this.instanceService.create(dto, userId);
+    const businessAccountRefId = req.headers['x-business-account-id'] as string | undefined;
+    return this.instanceService.create(dto, userId, businessAccountRefId);
   }
 
   @Get()

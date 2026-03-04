@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../../database/drizzle.provider';
@@ -15,7 +15,7 @@ export class InstanceService {
     private readonly cache: CacheService,
   ) {}
 
-  async create(dto: CreateInstanceDto, userId?: string) {
+  async create(dto: CreateInstanceDto, userId?: string, businessAccountRefId?: string) {
     const existing = await this.db
       .select()
       .from(schema.instances)
@@ -26,13 +26,38 @@ export class InstanceService {
       throw new ConflictException(`Instance "${dto.instanceName}" already exists`);
     }
 
+    // Resolve businessAccountId and accessToken from business_accounts table
+    let businessAccountId = dto.businessAccountId;
+    let accessToken = dto.accessToken;
+    let resolvedRefId = businessAccountRefId;
+
+    if (!businessAccountId && businessAccountRefId) {
+      const [ba] = await this.db
+        .select()
+        .from(schema.businessAccounts)
+        .where(eq(schema.businessAccounts.id, businessAccountRefId))
+        .limit(1);
+
+      if (!ba) {
+        throw new BadRequestException('Business Account not found');
+      }
+
+      businessAccountId = ba.businessAccountId;
+      accessToken = ba.accessToken;
+    }
+
+    if (!businessAccountId || !accessToken) {
+      throw new BadRequestException('businessAccountId and accessToken are required');
+    }
+
     const [instance] = await this.db
       .insert(schema.instances)
       .values({
         name: dto.instanceName,
         phoneNumberId: dto.phoneNumberId,
-        businessAccountId: dto.businessAccountId,
-        accessToken: dto.accessToken,
+        businessAccountId,
+        accessToken,
+        businessAccountRefId: resolvedRefId,
         apiKey: dto.apiKey,
         userId,
       })
