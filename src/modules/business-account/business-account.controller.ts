@@ -36,6 +36,11 @@ export class BusinessAccountController {
     return this.instanceService.findByBusinessAccountRefId(id);
   }
 
+  @Post('sync-names')
+  syncNames() {
+    return this.businessAccountService.syncNames();
+  }
+
   @Post(':id/members')
   addMember(@Param('id') id: string, @Body() dto: AddMemberDto) {
     return this.businessAccountService.addMember(id, dto.userId, dto.role);

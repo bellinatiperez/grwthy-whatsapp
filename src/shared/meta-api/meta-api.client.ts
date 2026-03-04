@@ -153,6 +153,23 @@ export class MetaApiClient {
     }
   }
 
+  async getBusinessAccountInfo(
+    businessAccountId: string,
+    accessToken: string,
+  ): Promise<{ id: string; name: string }> {
+    try {
+      const url = this.buildUrl(businessAccountId);
+      const headers = this.buildHeaders(accessToken);
+      const { data } = await axios.get<{ id: string; name: string }>(url, {
+        headers,
+        params: { fields: 'name' },
+      });
+      return data;
+    } catch (error) {
+      this.handleError(error as AxiosError<MetaApiErrorResponse>, 'getBusinessAccountInfo');
+    }
+  }
+
   async updateBusinessProfile(
     phoneNumberId: string,
     accessToken: string,
