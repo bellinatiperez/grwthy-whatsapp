@@ -25,14 +25,18 @@ export class MediaController {
     const key = `${instance.id}/${mediaId}`;
 
     let buffer: Buffer;
+    let contentType: string;
     try {
-      buffer = await this.storageService.downloadFile(key);
+      const cached = await this.storageService.downloadFile(key);
+      buffer = cached.buffer;
+      contentType = cached.contentType;
     } catch {
       const result = await this.mediaDownloadService.downloadAndStore(instance, mediaId);
       buffer = result.buffer;
-      res.set('Content-Type', result.mimeType);
+      contentType = result.mimeType;
     }
 
+    res.set('Content-Type', contentType);
     res.set('Cache-Control', 'private, max-age=86400');
     res.send(buffer);
   }

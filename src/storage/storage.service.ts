@@ -68,11 +68,14 @@ export class StorageService implements OnModuleInit {
     return getSignedUrl(this.s3Client, command, { expiresIn });
   }
 
-  async downloadFile(key: string): Promise<Buffer> {
-    const { Body } = await this.s3Client.send(
+  async downloadFile(key: string): Promise<{ buffer: Buffer; contentType: string }> {
+    const { Body, ContentType } = await this.s3Client.send(
       new GetObjectCommand({ Bucket: this.bucketName, Key: key }),
     );
-    return Buffer.from(await Body!.transformToByteArray());
+    return {
+      buffer: Buffer.from(await Body!.transformToByteArray()),
+      contentType: ContentType || 'application/octet-stream',
+    };
   }
 
   async deleteFile(key: string): Promise<void> {
