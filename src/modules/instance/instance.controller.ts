@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Req, UseGuards } from '@nestjs/common';
 import * as express from 'express';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { InstanceService } from './instance.service';
@@ -9,16 +9,19 @@ import { CreateInstanceDto } from './dto/create-instance.dto';
 export class InstanceController {
   constructor(private readonly instanceService: InstanceService) {}
 
+  private getBusinessAccountRefId(req: express.Request): string | undefined {
+    return req.headers['x-business-account-id'] as string | undefined;
+  }
+
   @Post()
   create(@Body() dto: CreateInstanceDto, @Req() req: express.Request) {
     const userId = req.headers['x-user-id'] as string | undefined;
-    const businessAccountRefId = req.headers['x-business-account-id'] as string | undefined;
-    return this.instanceService.create(dto, userId, businessAccountRefId);
+    return this.instanceService.create(dto, userId, this.getBusinessAccountRefId(req));
   }
 
   @Get()
   findAll(@Req() req: express.Request) {
-    const businessAccountRefId = req.headers['x-business-account-id'] as string | undefined;
+    const businessAccountRefId = this.getBusinessAccountRefId(req);
     if (businessAccountRefId) {
       return this.instanceService.findByBusinessAccountRefId(businessAccountRefId);
     }
@@ -26,12 +29,22 @@ export class InstanceController {
   }
 
   @Get(':instanceName')
-  findByName(@Param('instanceName') name: string) {
-    return this.instanceService.findByName(name);
+  async findByName(@Param('instanceName') name: string, @Req() req: express.Request) {
+    const instance = await this.instanceService.findByName(name);
+    const businessAccountRefId = this.getBusinessAccountRefId(req);
+    if (businessAccountRefId && instance.businessAccountRefId !== businessAccountRefId) {
+      throw new NotFoundException(`Instance "${name}" not found`);
+    }
+    return instance;
   }
 
   @Delete(':instanceName')
-  remove(@Param('instanceName') name: string) {
+  async remove(@Param('instanceName') name: string, @Req() req: express.Request) {
+    const instance = await this.instanceService.findByName(name);
+    const businessAccountRefId = this.getBusinessAccountRefId(req);
+    if (businessAccountRefId && instance.businessAccountRefId !== businessAccountRefId) {
+      throw new NotFoundException(`Instance "${name}" not found`);
+    }
     return this.instanceService.remove(name);
   }
 }
