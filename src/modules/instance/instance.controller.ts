@@ -17,7 +17,11 @@ export class InstanceController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Req() req: express.Request) {
+    const businessAccountRefId = req.headers['x-business-account-id'] as string | undefined;
+    if (businessAccountRefId) {
+      return this.instanceService.findByBusinessAccountRefId(businessAccountRefId);
+    }
     return this.instanceService.findAll();
   }
 
