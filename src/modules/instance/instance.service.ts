@@ -100,6 +100,24 @@ export class InstanceService {
     return instance;
   }
 
+  async findById(id: string) {
+    const cached = await this.cache.get<schema.Instance>(`instance:id:${id}`);
+    if (cached) return cached;
+
+    const [instance] = await this.db
+      .select()
+      .from(schema.instances)
+      .where(eq(schema.instances.id, id))
+      .limit(1);
+
+    if (!instance) {
+      throw new NotFoundException(`Instance not found`);
+    }
+
+    await this.cacheInstance(instance);
+    return instance;
+  }
+
   async findByPhoneNumberId(phoneNumberId: string) {
     const cached = await this.cache.get<schema.Instance>(`instance:phone:${phoneNumberId}`);
     if (cached) return cached;
@@ -129,14 +147,26 @@ export class InstanceService {
 
   async remove(name: string) {
     const instance = await this.findByName(name);
-    await this.db.delete(schema.instances).where(eq(schema.instances.id, instance.id));
-    await this.cache.del(`instance:name:${name}`);
-    await this.cache.del(`instance:phone:${instance.phoneNumberId}`);
-    this.logger.log(`Instance "${name}" deleted`);
+    await this.deleteInstance(instance);
     return { deleted: true };
   }
 
+  async removeById(id: string) {
+    const instance = await this.findById(id);
+    await this.deleteInstance(instance);
+    return { deleted: true };
+  }
+
+  private async deleteInstance(instance: schema.Instance): Promise<void> {
+    await this.db.delete(schema.instances).where(eq(schema.instances.id, instance.id));
+    await this.cache.del(`instance:id:${instance.id}`);
+    await this.cache.del(`instance:name:${instance.name}`);
+    await this.cache.del(`instance:phone:${instance.phoneNumberId}`);
+    this.logger.log(`Instance "${instance.name}" deleted`);
+  }
+
   private async cacheInstance(instance: schema.Instance): Promise<void> {
+    await this.cache.set(`instance:id:${instance.id}`, instance);
     await this.cache.set(`instance:name:${instance.name}`, instance);
     await this.cache.set(`instance:phone:${instance.phoneNumberId}`, instance);
   }

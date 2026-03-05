@@ -28,23 +28,23 @@ export class InstanceController {
     return this.instanceService.findAll();
   }
 
-  @Get(':instanceName')
-  async findByName(@Param('instanceName') name: string, @Req() req: express.Request) {
-    const instance = await this.instanceService.findByName(name);
+  @Get(':id')
+  async findById(@Param('id') id: string, @Req() req: express.Request) {
+    const instance = await this.instanceService.findById(id);
     const businessAccountRefId = this.getBusinessAccountRefId(req);
     if (businessAccountRefId && instance.businessAccountRefId !== businessAccountRefId) {
-      throw new NotFoundException(`Instance "${name}" not found`);
+      throw new NotFoundException('Instance not found');
     }
     return instance;
   }
 
-  @Delete(':instanceName')
-  async remove(@Param('instanceName') name: string, @Req() req: express.Request) {
-    const instance = await this.instanceService.findByName(name);
+  @Delete(':id')
+  async remove(@Param('id') id: string, @Req() req: express.Request) {
+    const instance = await this.instanceService.findById(id);
     const businessAccountRefId = this.getBusinessAccountRefId(req);
     if (businessAccountRefId && instance.businessAccountRefId !== businessAccountRefId) {
-      throw new NotFoundException(`Instance "${name}" not found`);
+      throw new NotFoundException('Instance not found');
     }
-    return this.instanceService.remove(name);
+    return this.instanceService.removeById(id);
   }
 }
