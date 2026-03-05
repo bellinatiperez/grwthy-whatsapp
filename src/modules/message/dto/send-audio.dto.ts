@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { BaseMessageDto } from './message-options.dto';
 
 export class SendAudioDto extends BaseMessageDto {
@@ -9,4 +9,8 @@ export class SendAudioDto extends BaseMessageDto {
   @IsString()
   @IsNotEmpty()
   audio: string;
+
+  @IsOptional()
+  @IsString()
+  mimetype?: string;
 }

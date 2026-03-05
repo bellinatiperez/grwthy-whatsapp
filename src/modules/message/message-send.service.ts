@@ -96,7 +96,7 @@ export class MessageSendService {
   }
 
   async sendAudio(instance: schema.Instance, dto: SendAudioDto) {
-    const { mediaId, mediaIdType } = await this.resolveMedia(instance, dto.audio);
+    const { mediaId, mediaIdType } = await this.resolveMedia(instance, dto.audio, dto.mimetype);
 
     const payload = buildMediaMessage(dto.number, 'audio', mediaId, mediaIdType, {
       quotedMessageId: dto.quoted?.id,
