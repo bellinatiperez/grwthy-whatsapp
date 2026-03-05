@@ -20,47 +20,47 @@ import { SendReactionDto } from './dto/send-reaction.dto';
 export class MessageSendController {
   constructor(private readonly messageSendService: MessageSendService) {}
 
-  @Post('send-text/:instanceName')
+  @Post('send-text/:id')
   sendText(@ResolvedInstance() instance: Instance, @Body() dto: SendTextDto) {
     return this.messageSendService.sendText(instance, dto);
   }
 
-  @Post('send-media/:instanceName')
+  @Post('send-media/:id')
   sendMedia(@ResolvedInstance() instance: Instance, @Body() dto: SendMediaDto) {
     return this.messageSendService.sendMedia(instance, dto);
   }
 
-  @Post('send-audio/:instanceName')
+  @Post('send-audio/:id')
   sendAudio(@ResolvedInstance() instance: Instance, @Body() dto: SendAudioDto) {
     return this.messageSendService.sendAudio(instance, dto);
   }
 
-  @Post('send-buttons/:instanceName')
+  @Post('send-buttons/:id')
   sendButtons(@ResolvedInstance() instance: Instance, @Body() dto: SendButtonsDto) {
     return this.messageSendService.sendButtons(instance, dto);
   }
 
-  @Post('send-list/:instanceName')
+  @Post('send-list/:id')
   sendList(@ResolvedInstance() instance: Instance, @Body() dto: SendListDto) {
     return this.messageSendService.sendList(instance, dto);
   }
 
-  @Post('send-template/:instanceName')
+  @Post('send-template/:id')
   sendTemplate(@ResolvedInstance() instance: Instance, @Body() dto: SendTemplateDto) {
     return this.messageSendService.sendTemplate(instance, dto);
   }
 
-  @Post('send-location/:instanceName')
+  @Post('send-location/:id')
   sendLocation(@ResolvedInstance() instance: Instance, @Body() dto: SendLocationDto) {
     return this.messageSendService.sendLocation(instance, dto);
   }
 
-  @Post('send-contact/:instanceName')
+  @Post('send-contact/:id')
   sendContact(@ResolvedInstance() instance: Instance, @Body() dto: SendContactDto) {
     return this.messageSendService.sendContact(instance, dto);
   }
 
-  @Post('send-reaction/:instanceName')
+  @Post('send-reaction/:id')
   sendReaction(@ResolvedInstance() instance: Instance, @Body() dto: SendReactionDto) {
     return this.messageSendService.sendReaction(instance, dto);
   }

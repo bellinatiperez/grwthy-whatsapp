@@ -12,7 +12,7 @@ import type { Instance } from '../../database/schema/schema';
 export class BusinessProfileController {
   constructor(private readonly businessProfileService: BusinessProfileService) {}
 
-  @Put(':instanceName')
+  @Put(':id')
   update(@ResolvedInstance() instance: Instance, @Body() dto: UpdateBusinessProfileDto) {
     return this.businessProfileService.update(instance, dto);
   }

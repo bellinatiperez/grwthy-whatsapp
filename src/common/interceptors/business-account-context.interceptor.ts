@@ -12,13 +12,13 @@ export class BusinessAccountContextInterceptor implements NestInterceptor {
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest();
-    const instanceName = request.params.instanceName;
+    const instanceId = request.params.id;
     const baId = request.headers['x-business-account-id'];
 
-    if (instanceName) {
-      const instance = await this.instanceService.findByName(instanceName);
+    if (instanceId) {
+      const instance = await this.instanceService.findById(instanceId);
       if (baId && instance.businessAccountRefId !== baId) {
-        throw new NotFoundException(`Instance "${instanceName}" not found`);
+        throw new NotFoundException('Instance not found');
       }
       request.instance = instance;
       request.businessAccountRefId = instance.businessAccountRefId;

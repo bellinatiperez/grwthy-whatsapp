@@ -16,7 +16,7 @@ export class MediaController {
     private readonly storageService: StorageService,
   ) {}
 
-  @Get(':instanceName/:mediaId')
+  @Get(':id/:mediaId')
   async getMedia(
     @ResolvedInstance() instance: Instance,
     @Param('mediaId') mediaId: string,

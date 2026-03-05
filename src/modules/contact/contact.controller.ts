@@ -11,7 +11,7 @@ import type { Instance } from '../../database/schema/schema';
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
-  @Get('contacts/:instanceName')
+  @Get('contacts/:id')
   findAll(@ResolvedInstance() instance: Instance) {
     return this.contactService.findAll(instance);
   }

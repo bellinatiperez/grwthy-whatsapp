@@ -11,17 +11,17 @@ import type { Instance } from '../../database/schema/schema';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Get('messages/:instanceName')
+  @Get('messages/:id')
   findMessages(@ResolvedInstance() instance: Instance) {
     return this.chatService.findMessages(instance);
   }
 
-  @Get('conversations/:instanceName')
+  @Get('conversations/:id')
   findConversations(@ResolvedInstance() instance: Instance) {
     return this.chatService.findConversations(instance);
   }
 
-  @Put('read/:instanceName/:remoteJid')
+  @Put('read/:id/:remoteJid')
   markAsRead(
     @ResolvedInstance() instance: Instance,
     @Param('remoteJid') remoteJid: string,
