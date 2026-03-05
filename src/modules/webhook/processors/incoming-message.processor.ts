@@ -35,7 +35,7 @@ export class IncomingMessageProcessor {
     private readonly webhookDispatch: WebhookDispatchService,
   ) {}
 
-  async process(instance: Instance, message: any, contact?: any, fromNumber?: string): Promise<void> {
+  async process(instance: Instance, message: any, contact?: any): Promise<void> {
     const parser = MESSAGE_PARSERS[message.type];
     if (!parser) {
       this.logger.warn(`Unsupported message type: ${message.type}`);
@@ -46,7 +46,7 @@ export class IncomingMessageProcessor {
 
     const saved = await this.persistence.saveIncomingMessage({
       metaMessageId: message.id,
-      fromNumber: fromNumber || message.from,
+      fromNumber: message.from,
       pushName: contact?.profile?.name,
       message: parsedContent,
       messageType: mapMetaTypeToInternal(message.type),

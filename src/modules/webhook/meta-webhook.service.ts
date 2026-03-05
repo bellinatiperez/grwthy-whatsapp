@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InstanceService } from '../instance/instance.service';
 import { IncomingMessageProcessor } from './processors/incoming-message.processor';
 import { MessageStatusProcessor } from './processors/message-status.processor';
-import { LidResolverService } from './lid-resolver.service';
 
 @Injectable()
 export class MetaWebhookService {
@@ -12,7 +11,6 @@ export class MetaWebhookService {
     private readonly instanceService: InstanceService,
     private readonly incomingProcessor: IncomingMessageProcessor,
     private readonly statusProcessor: MessageStatusProcessor,
-    private readonly lidResolver: LidResolverService,
   ) {}
 
   async processWebhookPayload(value: any): Promise<void> {
@@ -27,12 +25,8 @@ export class MetaWebhookService {
 
     if (value.messages) {
       for (const message of value.messages) {
-        const contact = value.contacts?.find(
-          (c: any) => c.wa_id === message.from || c.user_id === message.from,
-        );
-
-        const fromNumber = await this.lidResolver.resolve(instance, message.from, contact);
-        await this.incomingProcessor.process(instance, message, contact, fromNumber);
+        const contact = value.contacts?.find((c: any) => c.wa_id === message.from);
+        await this.incomingProcessor.process(instance, message, contact);
       }
     }
 
