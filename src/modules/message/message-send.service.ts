@@ -85,7 +85,7 @@ export class MessageSendService {
     const saved = await this.persistence.saveOutgoingMessage({
       metaMessageId: result.messages[0].id,
       recipientNumber: dto.number,
-      message: { media: dto.media, mediaType: dto.mediatype, caption: dto.caption },
+      message: { type: dto.mediatype, mediaId, caption: dto.caption, fileName: dto.fileName },
       messageType: mapMetaTypeToInternal(dto.mediatype),
       instanceId: instance.id,
       webhookUrl: dto.webhookUrl,
@@ -107,7 +107,7 @@ export class MessageSendService {
     const saved = await this.persistence.saveOutgoingMessage({
       metaMessageId: result.messages[0].id,
       recipientNumber: dto.number,
-      message: { audio: dto.audio },
+      message: { type: 'audio', mediaId },
       messageType: 'audioMessage',
       instanceId: instance.id,
       webhookUrl: dto.webhookUrl,
