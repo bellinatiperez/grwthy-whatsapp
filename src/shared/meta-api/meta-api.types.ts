@@ -64,6 +64,10 @@ export interface MetaBusinessProfilePayload {
   profile_picture_handle?: string;
 }
 
+export interface MetaPhoneNumberLookupResponse {
+  data: Array<{ id: string; display_phone_number: string }>;
+}
+
 export interface MetaApiErrorResponse {
   error: {
     message: string;

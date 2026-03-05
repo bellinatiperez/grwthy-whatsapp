@@ -11,6 +11,7 @@ import {
   MetaCreateTemplatePayload,
   MetaCreateTemplateResponse,
   MetaBusinessProfilePayload,
+  MetaPhoneNumberLookupResponse,
   MetaApiErrorResponse,
 } from './meta-api.types';
 
@@ -167,6 +168,25 @@ export class MetaApiClient {
       return data;
     } catch (error) {
       this.handleError(error as AxiosError<MetaApiErrorResponse>, 'getBusinessAccountInfo');
+    }
+  }
+
+  async resolvePhoneNumber(
+    phoneNumberId: string,
+    accessToken: string,
+    userId: string,
+  ): Promise<string | null> {
+    try {
+      const url = this.buildUrl(phoneNumberId, 'phone_numbers');
+      const headers = this.buildHeaders(accessToken);
+      const { data } = await axios.get<MetaPhoneNumberLookupResponse>(url, {
+        headers,
+        params: { filtering: JSON.stringify([{ field: 'user_ids', operator: 'CONTAINS', value: userId }]) },
+      });
+      const phone = data.data?.[0]?.display_phone_number;
+      return phone ? phone.replace(/\D/g, '') : null;
+    } catch {
+      return null;
     }
   }
 
