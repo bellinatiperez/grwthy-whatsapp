@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MetaWebhookController } from './meta-webhook.controller';
 import { MetaWebhookService } from './meta-webhook.service';
+import { LidResolverService } from './lid-resolver.service';
 import { IncomingMessageProcessor } from './processors/incoming-message.processor';
 import { MessageStatusProcessor } from './processors/message-status.processor';
 import { TemplateStatusProcessor } from './processors/template-status.processor';
@@ -11,6 +12,6 @@ import { WebhookDispatchModule } from '../webhook-dispatch/webhook-dispatch.modu
 @Module({
   imports: [InstanceModule, MessageModule, WebhookDispatchModule],
   controllers: [MetaWebhookController],
-  providers: [MetaWebhookService, IncomingMessageProcessor, MessageStatusProcessor, TemplateStatusProcessor],
+  providers: [MetaWebhookService, LidResolverService, IncomingMessageProcessor, MessageStatusProcessor, TemplateStatusProcessor],
 })
 export class MetaWebhookModule {}
